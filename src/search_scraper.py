@@ -8,6 +8,7 @@ from selenium.webdriver.common.keys import Keys
 import re
 import time
 import datetime
+import datetime as dt
 try:
     import urlparse
 except ImportError:
@@ -17,20 +18,11 @@ except ImportError:
 class YouTubeSearchScraper(object):
 
     def __init__(self):
-        '''
-        csv_file_path
-        '''
         self.search_data_csv_file_name = "./../data/search/youtube_search_csv_data"
         self.channel_list_csv_file_name = "./../data/channel/youtube_channel_list"
         self.search_csv_data_file_path = os.path.join(os.getcwd(), self.search_data_csv_file_name+'.csv')
         self.channel_list_csv_file_path = os.path.join(os.getcwd(), self.channel_list_csv_file_name+'.csv')
-        '''
-        extraction_data
-        '''
         self.search_urls = []
-        '''
-        scrape_at_stmp
-        '''
         self.scrape_at = datetime.date.today().strftime("%Y/%m/%d")
 
 
@@ -71,19 +63,11 @@ class YouTubeSearchScraper(object):
                 html = self.driver.page_source
                 if self.current_html != html:
                     self.current_html=html
-                    t = 0
-                    start = time.time()
-                    t = time.time() - start
-                    t == 10
+                else:
                     self.parse_search_videos()
                     self.search_data_save_as_csv_file()
                     self.channel_list_add_as_csv_file()
                     break
-                # else:
-                #     self.parse_search_videos()
-                #     self.search_data_save_as_csv_file()
-                #     self.channel_list_add_as_csv_file()
-                #     break
 
 
     def parse_search_videos(self):
@@ -113,21 +97,12 @@ class YouTubeSearchScraper(object):
         turn_id = 0
         soup = BeautifulSoup(self.current_html, 'html.parser')
         for i in soup.find_all("div", id = "dismissable"):
-            '''
-            TitleOfIntExtractionFunction
-            '''
             title_i = re.findall('id="video-title" title=".*">', str(i))
             title_i_str = ",".join(title_i)
             title = title_i_str.replace('id="video-title" title="', '').replace('">', '').replace('&amp;', '&')
-            '''
-            UrlOfIntExtractionFunction
-            '''
             video_url_i = re.findall('class="yt-simple-endpoint style-scope ytd-video-renderer".* id="video-title"', str(i))
             video_url_i_str = ",".join(video_url_i)
             video_url = video_url_i_str.replace('class="yt-simple-endpoint style-scope ytd-video-renderer" href=', '').replace(' id="video-title"', '').strip('""')
-            '''
-            ViewOfIntExtractionFunction
-            '''
             view_i = re.findall('<yt-formatted-string aria-label=".* 回視聴" class="style-scope ytd-video-renderer">', str(i))
             view_i_str = ",".join(view_i)
             view_i_str_replace = view_i_str.replace('<yt-formatted-string aria-label="', '').replace('前 ', '').replace(' 回視聴" class="style-scope ytd-video-renderer">', '').replace(',', '')
@@ -139,35 +114,20 @@ class YouTubeSearchScraper(object):
                 view = (view_i_str_replace_int[-1])
             else:
                 continue
-            '''
-            ChannelUrlNameOfIntExtractionFunction
-            '''
             channel_url_i = re.findall('<a aria-label="チャンネルに移動" class="style-scope ytd-video-renderer" href=".*">', str(i))
             channel_url_i_str = ",".join(channel_url_i)
             channel_url = channel_url_i_str.replace('<a aria-label="チャンネルに移動" class="style-scope ytd-video-renderer" href="', '').replace('">', '').strip('""')
-            '''
-            ChannelNameOfIntExtractionFunction
-            '''
             channel_name_i = re.findall('<yt-formatted-string class="style-scope ytd-channel-name" has-link-only_="" id="text" title=""><a class="yt-simple-endpoint style-scope yt-formatted-string" dir="auto" href=".*</a></yt-formatted-string>', str(i))
             channel_name_i_str = ",".join(channel_name_i)
             channel_name = channel_name_i_str.replace('<yt-formatted-string class="style-scope ytd-channel-name" has-link-only_="" id="text" title=""><a class="yt-simple-endpoint style-scope yt-formatted-string" dir="auto" href="', '').replace('</a></yt-formatted-string>', '').replace('%s' % channel_url, '').replace('" spellcheck="false">', '')
             material = re.findall('id="video-title" title=".*">', str(i))
-            '''
-            VideoTimeOfIntExtractionFunction
-            '''
             video_length_i = re.findall('</yt-icon><span aria-label=".* class="style-scope ytd-thumbnail-overlay-time-status-renderer"', str(i))
             video_length_i_str = ",".join(video_length_i)
             video_length = video_length_i_str.replace('</yt-icon><span aria-label="', '').replace('" class="style-scope ytd-thumbnail-overlay-time-status-renderer"', '')
             material = re.findall('id="video-title" title=".*">', str(i))
-            '''
-            CreateAtOfIntExtractionFunction
-            '''
             create_stamp_i = re.findall('<span class="style-scope ytd-video-meta-block">.*前</span>', str(i))
             create_stamp_i_str = ",".join(create_stamp_i)
             create_stamp = create_stamp_i_str.replace('<span class="style-scope ytd-video-meta-block">', '').replace('前</span>', '')
-            '''
-            Validation
-            '''
             if title is None:
                 continue
             elif video_url is None:
@@ -315,22 +275,6 @@ class YouTubeSearchScraper(object):
             self.channel_about_urls.append(channel_about_url)
 
 
-    # def csv_file_duplicate_count(self):
-    #     df = pd.read_csv(self.channel_list_csv_file_path)
-    #     df.loc[self.scrape_at]
-    #     self.df_scrape_at_filter = df[df.duplicated(subset='video_url', keep=False, inplace=True)]
-    #     print(self.df_scrape_at_filter)
-    #     channel_url_data = self.df_scrape_at_filter.set_index('video_url')
-    #     df.replace({'age': {24: 100, 18: 0}, 'point': {None: カウントした}})
-    #     channel_urls_ndarray = channel_url_data.index.values
-    #     channel_urls = channel_urls_ndarray.tolist()
-    #     for i in channel_urls:
-    #         youtube_url = 'https://www.youtube.com'
-    #         self.channel_url = ('%s' % i)
-    #         channel_about_url = urlparse.urljoin(youtube_url, self.channel_url+'/about')
-    #         self.channel_about_urls.append(channel_about_url)
-
-
     def csv_file_drop_duplicate(self):
         df = pd.read_csv('./../data/channel/youtube_channel_list.csv')
         df_drop_duplicate = df.drop_duplicates(subset='channel_url')
@@ -338,6 +282,51 @@ class YouTubeSearchScraper(object):
         print(self.channel_list_csv_file_path+"重複削除")
 
 
+class SearchQuery(object):
+
+    def __init__(self):
+        self.search_data_csv_file_name = "./../data/search/youtube_search_csv_data"
+        self.channel_list_csv_file_name = "./../data/channel/youtube_channel_list"
+        self.search_csv_data_file_path = os.path.join(os.getcwd(), self.search_data_csv_file_name+'.csv')
+        self.channel_list_csv_file_path = os.path.join(os.getcwd(), self.channel_list_csv_file_name+'.csv')
+        self.search_urls = []
+        self.dt_now = datetime.datetime.now()
+        self.dt_year = self.dt_now.year
+        self.dt_month = self.dt_now.month
+        self.dt_day = self.dt_now.day
+
+
+    def run(self):
+        self.read_csv_file()
+
+
+    def read_csv_file(self):
+        channel_list_df = pd.read_csv(self.channel_list_csv_file_path)
+        channel_list_df_channel_url_data = channel_list_df.set_index('channel_url')
+        channel_list_channel_urls_ndarray = channel_list_df_channel_url_data.index.values
+        search_df = pd.read_csv(self.search_csv_data_file_path)
+        self.df_scrape_at_this_today = search_df[search_df['scrape_at'] == dt.datetime(int(self.dt_year),int(self.dt_month),int(self.dt_day)).strftime("%Y/%m/%d")]
+        search_channel_url_data = self.df_scrape_at_this_today.set_index('channel_url')
+        search_channel_urls_ndarray = search_channel_url_data.index.values
+        search_channel_urls = search_channel_urls_ndarray.tolist()
+        for i in search_channel_urls:
+            print(channel_list_channel_urls_ndarray)
+            channel_list_channel_urls_ndarray.str.contains(i)
+            print(channel_list_channel_urls_ndarray)
+
+
+    def read_search_query(self):
+        search_query_csv = pd.read_csv('./../data/search/search_list.csv',index_col='search_query')
+        search_query_values = search_query_csv.index.values
+        search_queries = search_query_values.tolist()
+        for i in search_queries:
+            youtube_url = 'https://www.youtube.com'
+            self.youtube_search_url = 'results?search_query='
+            self.search_query = ('%s' % i)
+            search_url = urlparse.urljoin(youtube_url, 'results?search_query='+self.search_query)
+            self.search_urls.append(search_url)
+
+
 if __name__ == "__main__":
-    scraper = YouTubeSearchScraper()
-    scraper.run()
+    query = SearchQuery()
+    query.run()

@@ -18,13 +18,6 @@ try:
     import urlparse
 except ImportError:
     import urllib.parse as urlparse
-# import sys
-# sys.path.append(os.path.channel_country_and_subscriberpath(".."))
-# from . import channel_country_and_subscriber
-# import socks, socket
-
-# socks.set_default_proxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9050)
-# socket.socket = socks.socksocket
 
 class YoutubeChannelVideoScraper(object):
 
@@ -38,10 +31,6 @@ class YoutubeChannelVideoScraper(object):
     def run(self):
         self.new_dir()
         self.scrape_at_filter()
-        '''
-        全てのデータを更新する際に使用
-        '''
-        # self.read_channel_urls()
         self.get_page_source()
         self.channel_list_add_as_csv_file()
         self.csv_file_drop_duplicate()
@@ -72,9 +61,6 @@ class YoutubeChannelVideoScraper(object):
             print(self.channel_videos_urls[-1])
 
 
-    '''
-    all data udpate
-    '''
     def read_channel_urls(self):
         channel_url_data = pd.read_csv(self.channel_list_csv_file_path, index_col='channel_url')
         channel_urls_ndarray = channel_url_data.index.values
@@ -104,10 +90,7 @@ class YoutubeChannelVideoScraper(object):
                 html = self.driver.page_source
                 if self.current_html != html:
                     self.current_html=html
-                    t = 0
-                    start = time.time()
-                    t = time.time() - start
-                    t == 10
+                else:
                     self.parse_videos_title_and_url_and_view()
                     self.new_csv_file()
                     self.save_as_csv_file()
@@ -116,14 +99,6 @@ class YoutubeChannelVideoScraper(object):
                     self.mean_comparison_function()
                     self.add_as_csv_file()
                     break
-                # else:
-                    # self.parse_videos_title_and_url_and_view()
-                    # self.new_csv_file()
-                    # self.save_as_csv_file()
-                    # self.mean_view_function()
-                    # self.mean_comparison_function()
-                    # self.add_as_csv_file()
-                #     break
 
 
     def parse_videos_title_and_url_and_view(self):
@@ -134,16 +109,10 @@ class YoutubeChannelVideoScraper(object):
         self.channel_subscribers = []
         self.create_stamps = []
         soup = BeautifulSoup(self.current_html, 'html.parser')
-        '''
-        ChannelNameOfExtractionFunction
-        '''
         channel_name_i = soup.find("yt-formatted-string", class_="style-scope ytd-channel-name")
         channel_name_lstrip = str(channel_name_i).lstrip('<yt-formatted-string class="style-scope ytd-channel-name" id="text" title="">')
         channel_name_rstrip = channel_name_lstrip.rstrip('</yt-formatted-string>')
         self.channel_name_rstrip = str(channel_name_rstrip)
-        '''
-        ChannelSubscriberOfIntExtractionFunction
-        '''
         channel_subscriber_i = soup.find("yt-formatted-string", class_="style-scope ytd-c4-tabbed-header-renderer")
         channel_subscriber_lstrip = str(channel_subscriber_i).lstrip('<yt-formatted-string class="style-scope ytd-c4-tabbed-header-renderer" id="subscriber-count">')
         channel_subscriber_rstrip = channel_subscriber_lstrip.rstrip('</yt-formatted-string>')
@@ -171,9 +140,6 @@ class YoutubeChannelVideoScraper(object):
             url = (i.get("href"))
             view_material_i = (i.get("aria-label"))
             create_stamp_material_i = (i.get("aria-label"))
-            '''
-            Validation
-            '''
             if title is None:
                 continue
             elif url is None:
@@ -182,9 +148,6 @@ class YoutubeChannelVideoScraper(object):
                 continue
             elif create_stamp_material_i is None:
                 continue
-            '''
-            ViewOfIntExtractionFunction
-            '''
             view_material = view_material_i.replace('　', ' ')
             view_findall = (re.findall('前 .*回視聴', view_material))
             if view_findall:
@@ -195,14 +158,8 @@ class YoutubeChannelVideoScraper(object):
                 view_int = [int(s) for s in view_replace_x_x_x.split() if s.isdigit()]
                 view_last_int = (view_int[-1])
                 view = view_last_int
-            '''
-            ChannelInfomation
-            '''
             channel_name = str(channel_name_rstrip)
             channel_subscriber = channel_subscriber_material
-            '''
-            CreatAtOfIntExtractionFunction
-            '''
             create_stamp_material = (i.get("aria-label"))
             create_stamp_findall = (re.findall('%s .*前' % channel_name, create_stamp_material))
             create_stamp_str = ",".join(create_stamp_findall)
@@ -332,17 +289,10 @@ class YoutubeChannelOverviewScraper(object):
         self.channel_length = []
         self.channel_list_csv_file_name = "./../data/channel/youtube_channel_list"
         self.channel_list_csv_file_path = os.path.join(os.getcwd(), self.channel_list_csv_file_name+'.csv')
-        '''
-        scraper JapaneWebScraper
-        '''
-        # self.nihongo_channel_countries = []
+
 
     def run(self):
         self.scrape_at_filter()
-        '''
-        All data update
-        '''
-        # self.read_channel_urls()
         self.get_page_source()
         self.channel_country_subscriber_add_as_csv_file()
         self.csv_file_drop_duplicate()
@@ -362,9 +312,7 @@ class YoutubeChannelOverviewScraper(object):
             self.channel_about_urls.append(channel_about_url)
             print(self.channel_about_urls[-1])
 
-    '''
-    All data update
-    '''
+
     def read_channel_urls(self):
         df = pd.read_csv(self.channel_list_csv_file_path)
         self.df_update = df[df['channel_subscriber'].isnull()]
@@ -385,10 +333,6 @@ class YoutubeChannelOverviewScraper(object):
             self.soup = BeautifulSoup(html.text, "html.parser")
             self.parse_channel_country()
             self.country_set()
-            '''
-            scraper JapaneWebScraper
-            '''
-            # self.country_nihongo_true()
             self.channel_subscriber_set()
 
 
@@ -396,9 +340,6 @@ class YoutubeChannelOverviewScraper(object):
         self.channel_countries = []
         self.channel_subscribers = []
         soup = self.soup
-        '''
-        channelSubscriberOfIntExtractionFunction
-        '''
         channel_subscriber_i = soup.find("yt-formatted-string", class_="style-scope ytd-c4-tabbed-header-renderer")
         channel_subscriber_lstrip = str(channel_subscriber_i).lstrip('<yt-formatted-string class="style-scope ytd-c4-tabbed-header-renderer" id="subscriber-count">')
         channel_subscriber_rstrip = channel_subscriber_lstrip.rstrip('</yt-formatted-string>')
@@ -442,20 +383,11 @@ class YoutubeChannelOverviewScraper(object):
             channel_subscriber_replace = channel_subscriber_rstrip.rstrip('K subscrib')
             channel_subscriber_sub = re.sub("\\D", "", str(channel_subscriber_replace))
             channel_subscriber_material = int(channel_subscriber_sub)
-            '''
-            countryOfIntExtractionFunction
-            '''
         for i in soup.find_all("td", class_="style-scope ytd-channel-about-metadata-renderer"):
             country_i_findall = re.findall('<yt-formatted-string class="style-scope ytd-channel-about-metadata-renderer">.*</yt-formatted-string>', str(i))
             country_i_replace = str(country_i_findall).replace('<yt-formatted-string class="style-scope ytd-channel-about-metadata-renderer">', '').replace('</yt-formatted-string>', '')
             country = str(country_i_replace).replace("['", '').replace("']", '')
-            '''
-            channelSubscriberOfIntExtractionFunction
-            '''
             channel_subscriber = channel_subscriber_material
-            '''
-            Validation
-            '''
             if "--" in str(country):
                 country = '非表示'
             if "<" in str(country):
@@ -467,9 +399,7 @@ class YoutubeChannelOverviewScraper(object):
             self.channel_countries.append(country)
             self.channel_subscribers.append(channel_subscriber)
 
-    '''
-    scraper JapaneWebScraper
-    '''
+
     def country_nihongo_true(self):
         country_list = self.channel_countries
         country_list_join = ','.join(str(country_list))
@@ -517,8 +447,8 @@ class YoutubeChannelOverviewScraper(object):
 
 
 if __name__ == "__main__":
-    # scraper = YoutubeChannelVideoScraper()
-    # scraper.run()
-    scraper = YoutubeChannelOverviewScraper()
+    channel_video_scraper = YoutubeChannelVideoScraper()
+    scraper.run()
+    over_view_scraper = YoutubeChannelOverviewScraper()
     scraper.run()
 

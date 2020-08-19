@@ -74,9 +74,6 @@ class ChannelCountryAndScraper(object):
         self.channel_countries = []
         self.channel_subscribers = []
         soup = BeautifulSoup(self.current_html, 'html.parser')
-        '''
-        channelSubscriberOfIntExtractionFunction
-        '''
         channel_subscriber_i = soup.find("yt-formatted-string", class_="style-scope ytd-c4-tabbed-header-renderer")
         channel_subscriber_lstrip = str(channel_subscriber_i).lstrip('<yt-formatted-string class="style-scope ytd-c4-tabbed-header-renderer" id="subscriber-count">')
         channel_subscriber_rstrip = channel_subscriber_lstrip.rstrip('</yt-formatted-string>')
@@ -103,20 +100,11 @@ class ChannelCountryAndScraper(object):
             channel_subscriber_replace = channel_subscriber_rstrip.replace(' ', '')
             channel_subscriber_sub = re.sub("\\D", "", str(channel_subscriber_replace))
             channel_subscriber_material = int(channel_subscriber_sub)
-            '''
-            countryOfIntExtractionFunction
-            '''
         for i in soup.find_all("td", class_="style-scope ytd-channel-about-metadata-renderer"):
             country_i_findall = re.findall('<yt-formatted-string class="style-scope ytd-channel-about-metadata-renderer">.*</yt-formatted-string>', str(i))
             country_i_replace = str(country_i_findall).replace('<yt-formatted-string class="style-scope ytd-channel-about-metadata-renderer">', '').replace('</yt-formatted-string>', '')
             country = str(country_i_replace).replace("['", '').replace("']", '')
-            '''
-            channelSubscriberOfIntExtractionFunction
-            '''
             channel_subscriber = channel_subscriber_material
-            '''
-            Validation
-            '''
             if "<!--css-build:shady-->" in str(country):
                 country = None
             if "<" in str(country):
